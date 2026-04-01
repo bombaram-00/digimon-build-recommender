@@ -2,27 +2,683 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>공사중</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디지몬 추천기</title>
 <style>
 body {
+    font-family: sans-serif;
     background: #111;
     color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-family: sans-serif;
-    text-align: center;
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
 }
+h1 { color: #00d4ff; }
 .box {
-    font-size: 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #222;
+    border-radius: 10px;
+}
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    background: #00d4ff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+#result {
+    white-space: pre-line;
+    background: #1b1b1b;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+small { color: #aaa; }
+
+label {
+    display: block;
+    margin: 6px 0;
 }
 </style>
 </head>
 <body>
+
+<h1>디지몬 추천기</h1>
+
 <div class="box">
-    🚧 현재 공사중입니다 🚧<br><br>
-    잠시 후 다시 이용해주세요
+    <h3>1. 몇 U덱 까지 보고오셨나요?</h3>
+    <label><input type="radio" name="u" value="1"> 1U</label>
+    <label><input type="radio" name="u" value="2~3"> 2~3U</label>
+    <label><input type="radio" name="u" value="5"> 5U</label>
+    <label><input type="radio" name="u" value="6"> 6U</label>
 </div>
+
+<div class="box">
+    <h3>2. 투자 성향은?</h3>
+    <label><input type="radio" name="invest" value="invest1"> 비싸도 성능</label>
+    <label><input type="radio" name="invest" value="invest2"> 가성비</label>
+    <label><input type="radio" name="invest" value="invest3"> 저자본</label>
+</div>
+
+<div class="box">
+    <h3>3. 딜링 <small>(최대 2개)</small></h3>
+    <label><input type="checkbox" id="dps1"> 딜뽕</label>
+    <label><input type="checkbox" id="dps2"> 1인분</label>
+    <label><input type="checkbox" id="dps3"> 딜 상관 X</label>
+</div>
+
+<div class="box">
+    <h3>4. 사냥 <small>(최대 2개)</small></h3>
+    <label><input type="checkbox" id="hunt1"> 광역사냥 효율 중요</label>
+    <label><input type="checkbox" id="hunt2"> 광역사냥 가능</label>
+    <label><input type="checkbox" id="hunt3"> 사냥 무관</label>
+</div>
+
+<div class="box">
+    <h3>5. 던전 <small>(최대 2개)</small></h3>
+    <label><input type="checkbox" id="dun1"> 주요 던전</label>
+    <label><input type="checkbox" id="dun2"> 상위 컨텐츠</label>
+    <label><input type="checkbox" id="dun3"> 솔로던 클리어 필수</label>
+</div>
+
+<button onclick="calc()">결과 보기</button>
+
+<div id="result"></div>
+
+<script>
+// ======================================================
+// 1) 디지몬 데이터
+// ======================================================
+const digimons = {
+    "오엑극": {
+        valueTag: "메인",
+        uScore: { u1: 5, u2~3: 3, u5: 5, u6: 0 },
+        scores: {
+            invest1: 10, invest2: 4, invest3: 2,
+            dps1: 10, dps2: 6, dps3: 2,
+            hunt1: 4, hunt2: 2, hunt3: 4,
+            dun1: 4, dun2: 10, dun3: 8
+        }
+    },
+    "아바도": {
+        valueTag: "메인",
+        uScore: { u1: 5, u2~3: 3, u5: 0, u6: 5 },
+        scores: {
+            invest1: 10, invest2: 4, invest3: 2,
+            dps1: 10, dps2: 6, dps3: 2,
+            hunt1: 8, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 10, dun3: 8
+        }
+    },
+    "아바코": {
+        valueTag: "메인",
+        uScore: { u1: 5, u2~3: 3, u5: 0, u6: 5 },
+        scores: {
+            invest1: 10, invest2: 4, invest3: 2,
+            dps1: 10, dps2: 6, dps3: 2,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 10, dun3: 8
+        }
+    },
+    "머시풀": {
+        valueTag: "메인",
+        uScore: { u1: 4, u2~3: 0, u5: 5, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 6, invest3: 4,
+            dps1: 8, dps2: 8, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 8, dun3: 6
+        }
+    },
+    "블룸": {
+        valueTag: "메인/서브",
+        uScore: { u1: 4, u2~3: 0, u5: 4, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 8, invest3: 6,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "황팔": {
+        valueTag: "메인/서브",
+        uScore: { u1: 4, u2~3: 0, u5: 4, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 8, invest3: 6,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "듀크림": {
+        valueTag: "메인/서브",
+        uScore: { u1: 4, u2~3: 0, u5: 4, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 8, invest3: 6,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "루사극": {
+        valueTag: "메인",
+        uScore: { u1: 4, u2~3: 0, u5: 5, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 8, invest3: 6,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 8, dun3: 6
+        }
+    },
+    "홀드": {
+        valueTag: "메인/서브",
+        uScore: { u1: 3, u2~3: 3, u5: 4, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 6, invest3: 6,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 8, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "갓드": {
+        valueTag: "메인/서브",
+        uScore: { u1: 3, u2~3: 3, u5: 4, u6: 0 },
+        scores: {
+            invest1: 6, invest2: 6, invest3: 4,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "스극": {
+        valueTag: "메인/서브",
+        uScore: { u1: 3, u2~3: 0, u5: 0, u6: 0 },
+        scores: {
+            invest1: 4, invest2: 8, invest3: 8,
+            dps1: 4, dps2: 6, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 4, dun3: 6
+        }
+    },
+    "무녀": {
+        valueTag: "서브/파츠",
+        uScore: { u1: 3, u2~3: 0, u5: 0, u6: 3 },
+        scores: {
+            invest1: 2, invest2: 8, invest3: 8,
+            dps1: 2, dps2: 2, dps3: 10,
+            hunt1: 8, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 8, dun3: 4
+        }
+    },
+    "슈페": {
+        valueTag: "서브/파츠",
+        uScore: { u1: 3, u2~3: 0, u5: 0, u6: 4 },
+        scores: {
+            invest1: 4, invest2: 8, invest3: 8,
+            dps1: 6, dps2: 8, dps3: 6,
+            hunt1: 4, hunt2: 2, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "리리각": {
+        valueTag: "메인/서브",
+        uScore: { u1: 3, u2~3: 3, u5: 5, u6: 0 },
+        scores: {
+            invest1: 8, invest2: 6, invest3: 4,
+            dps1: 8, dps2: 8, dps3: 2,
+            hunt1: 8, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 8, dun3: 6
+        }
+    },
+    "던데블": {
+        valueTag: "서브/파츠",
+        uScore: { u1: 3, u2~3: 0, u5: 3, u6: 0 },
+        scores: {
+            invest1: 4, invest2: 7, invest3: 8,
+            dps1: 2, dps2: 6, dps3: 4,
+            hunt1: 8, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "왕극": {
+        valueTag: "서브/파츠",
+        uScore: { u1: 2, u2~3: 3, u5: 4, u6: 0 },
+        scores: {
+            invest1: 4, invest2: 6, invest3: 4,
+            dps1: 2, dps2: 6, dps3: 4,
+            hunt1: 6, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    },
+    "지밀각": {
+        valueTag: "서브/파츠",
+        uScore: { u1: 2, u2~3: 3, u5: 3, u6: 0 },
+        scores: {
+            invest1: 2, invest2: 4, invest3: 8,
+            dps1: 2, dps2: 6, dps3: 4,
+            hunt1: 4, hunt2: 2, hunt3: 4,
+            dun1: 4, dun2: 4, dun3: 6
+        }
+    },
+    "아파맨": {
+        valueTag: "메인",
+        uScore: { u1: 4, u2~3: 3, u5: 0, u6: 5 },
+        scores: {
+            invest1: 10, invest2: 4, invest3: 2,
+            dps1: 10, dps2: 6, dps3: 2,
+            hunt1: 8, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 10, dun3: 8
+        }
+    },
+    "에오스": {
+        valueTag: "서브/파츠",
+        uScore: { u1: 3, u2~3: 3, u5: 0, u6: 4 },
+        scores: {
+            invest1: 6, invest2: 6, invest3: 8,
+            dps1: 6, dps2: 8, dps3: 4,
+            hunt1: 5, hunt2: 4, hunt3: 4,
+            dun1: 4, dun2: 6, dun3: 6
+        }
+    }
+};
+
+// ======================================================
+// 2) 체크박스 최대 2개 제한
+// ======================================================
+function limitCheckboxes(prefix){
+    const boxes = [...document.querySelectorAll(`input[id^="${prefix}"]`)];
+    boxes.forEach(box => {
+        box.addEventListener("change", () => {
+            const checked = boxes.filter(b => b.checked);
+            if(checked.length > 2){
+                box.checked = false;
+                alert("최대 2개까지만 선택 가능");
+            }
+        });
+    });
+}
+limitCheckboxes("dps");
+limitCheckboxes("hunt");
+limitCheckboxes("dun");
+
+// ======================================================
+// 3) U 점수 계산 함수
+// ======================================================
+function getUScore(uScore, selectedU){
+    if(selectedU === "1"){
+        return uScore.u1;
+    }
+    if(selectedU === "2~3"){
+        return uScore.u1 + uScore.u2~3;
+    }
+    if(selectedU === "5"){
+        return uScore.u5;
+    }
+    if(selectedU === "6"){
+        return uScore.u6;
+    }
+    return 0;
+}
+
+function getFilterUScore(uScore, selectedU){
+    if(selectedU === "1"){
+        return uScore.u1;
+    }
+    if(selectedU === "2~3"){
+        return uScore.u2~3;
+    }
+    if(selectedU === "5"){
+        return uScore.u5;
+    }
+    if(selectedU === "6"){
+        return uScore.u6;
+    }
+    return 0;
+}
+
+// ======================================================
+// 3-1) 디지몬 고유 성향 판별용
+// ======================================================
+const traitLabels = {
+    invest: {
+        high: "고투자형",
+        mid: "가성비형",
+        low: "저자본형"
+    },
+    dps: {
+        high: "딜 강점",
+        mid: "딜 무난",
+        low: "딜 부담 적음"
+    },
+    hunt: {
+        high: "광역사냥 강점",
+        mid: "사냥 무난"
+    },
+    dungeon: {
+        high: "상위컨텐츠 강세",
+        mid: "솔로던 강세",
+        low: "주던 무난"
+    }
+};
+
+// ======================================================
+// 3-2) U 이유 문구
+// ======================================================
+function getUReasonLabel(name, data, selectedU){
+    if(selectedU === "1"){
+        const score = data.uScore.u1;
+
+        if(score >= 5) return "1U 메인급";
+        if(score >= 4) return "1U 주력 가능";
+        if(score >= 3) return "1U 무난";
+        return "1U 약세";
+    }
+
+    if(selectedU === "2~3"){
+        const score = data.uScore.u1 + data.uScore.u2~3;
+
+        if(score >= 6) return "2~3U 메인급";
+        if(score >= 4) return "2~3U 서브급";
+        if(score >= 2) return "2~3U 파츠";
+        return "2~3U 저점";
+    }
+
+    if(selectedU === "5"){
+        const score = data.uScore.u5;
+
+        if(score >= 5) return "5U 핵심축";
+        if(score >= 4) return "5U 실전형";
+        if(score >= 3) return "5U 파츠";
+        return "5U 저점";
+    }
+
+    if(selectedU === "6"){
+        const score = data.uScore.u6;
+
+        if(score >= 5) return "6U 핵심축";
+        if(score >= 4) return "6U 빌드업형";
+        if(score >= 3) return "6U 파츠";
+        return "6U 저점";
+    }
+
+    return "현재 조건 적합";
+}
+// ======================================================
+// 3-3) 투자 성향
+// ======================================================
+function getInvestTrait(data){
+    const s = data.scores;
+    const maxInvest = Math.max(s.invest1, s.invest2, s.invest3);
+
+    if (s.invest1 === s.invest2 && s.invest2 === s.invest3) {
+        return { label: "밸런스형", score: s.invest1 };
+    }
+
+    if (s.invest1 === s.invest2 && s.invest1 > s.invest3) {
+        return { label: "밸런스형", score: s.invest1 };
+    }
+
+    if (s.invest1 === maxInvest && s.invest1 > s.invest2 && s.invest1 > s.invest3) {
+        return { label: traitLabels.invest.high, score: s.invest1 };
+    }
+
+    if (s.invest3 === maxInvest && s.invest3 >= s.invest2) {
+        return { label: traitLabels.invest.low, score: s.invest3 };
+    }
+
+    if (s.invest2 === maxInvest) {
+        const hasDistinctEdge =
+            s.hunt1 >= 8 || s.dun2 >= 8 || s.dun3 >= 8;
+
+        if (hasDistinctEdge) {
+            return { label: "밸런스형", score: s.invest2 };
+        }
+
+        return { label: traitLabels.invest.mid, score: s.invest2 };
+    }
+
+    if (maxInvest === s.invest1) return { label: traitLabels.invest.high, score: s.invest1 };
+    if (maxInvest === s.invest2) return { label: traitLabels.invest.mid, score: s.invest2 };
+    return { label: traitLabels.invest.low, score: s.invest3 };
+}
+
+// ======================================================
+// 3-4) 딜 성향
+// ======================================================
+function getDpsTrait(data, name){
+    const s = data.scores;
+
+    if (name === "머시풀") {
+        return { label: "딜 무난", score: s.dps2 };
+    }
+
+    if (s.dps1 >= 8 && s.dps1 > s.dps2) {
+        return { label: "딜 강점", score: s.dps1 };
+    }
+    if (s.dps2 >= 8) {
+        return { label: "딜 무난", score: s.dps2 };
+    }
+    if (s.dps3 >= 8) {
+        return { label: "딜 부담 적음", score: s.dps3 };
+    }
+
+    return { label: "", score: 0 };
+}
+
+// ======================================================
+// 3-5) 사냥 성향
+// ======================================================
+function getHuntTrait(data){
+    const s = data.scores;
+
+    if (s.hunt1 >= 8) return { label: "광역사냥 강점", score: s.hunt1 };
+    if (s.hunt2 >= 4) return { label: "사냥 무난", score: s.hunt2 };
+
+    return { label: "", score: 0 };
+}
+
+// ======================================================
+// 3-6) 던전 성향
+// ======================================================
+function getDungeonTrait(data){
+    const s = data.scores;
+
+    if (s.dun2 >= 10) {
+        return { label: "상위컨텐츠 강세", score: s.dun2 };
+    }
+    if (s.dun2 >= 8) {
+        return { label: "상위컨텐츠 무난", score: s.dun2 };
+    }
+
+    return { label: "", score: 0 };
+}
+
+// ======================================================
+// 3-7) 이유 3개 뽑기
+// ======================================================
+function buildReasons(name, data, selectedU, investKey, selectedKeys){
+    const investTrait = getInvestTrait(data);
+    const dpsTrait = getDpsTrait(data, name);
+    const huntTrait = getHuntTrait(data);
+    const dungeonTrait = getDungeonTrait(data);
+
+    const reasons = [];
+    const used = new Set();
+
+    // 1. U 이유는 무조건 먼저
+    const uLabel = getUReasonLabel(name, data, selectedU);
+    if (uLabel && !used.has(uLabel)) {
+        reasons.push(uLabel);
+        used.add(uLabel);
+    }
+
+    // 2. 투자 성향
+    if (investTrait.label && !used.has(investTrait.label)) {
+        reasons.push(investTrait.label);
+        used.add(investTrait.label);
+    }
+
+    // 3. 딜 성향
+    if (dpsTrait.label && !used.has(dpsTrait.label)) {
+        reasons.push(dpsTrait.label);
+        used.add(dpsTrait.label);
+    }
+
+    // 4. 남는 자리는 사냥/던전 중 점수 높은 쪽
+    const extraCandidates = [];
+
+    if (huntTrait.score > 0 && huntTrait.label) {
+        extraCandidates.push({
+            label: huntTrait.label,
+            score: huntTrait.score + (huntTrait.label === "광역사냥 강점" ? 1 : 0)
+        });
+    }
+
+    if (dungeonTrait.score > 0 && dungeonTrait.label) {
+        extraCandidates.push({
+            label: dungeonTrait.label,
+            score: dungeonTrait.score + (
+                dungeonTrait.label === "상위컨텐츠 강세" || dungeonTrait.label === "상위컨텐츠 무난" ? 1 : 0
+            )
+        });
+    }
+
+    extraCandidates.sort((a, b) => b.score - a.score);
+
+    for (const item of extraCandidates) {
+        if (used.has(item.label)) continue;
+        reasons.push(item.label);
+        used.add(item.label);
+        if (reasons.length === 3) break;
+    }
+
+    return reasons;
+}
+// ======================================================
+// 4) 계산
+// ======================================================
+function calc(){
+    const selectedU = document.querySelector('input[name="u"]:checked');
+    if(!selectedU){
+        alert("몇 U 할 건지 선택하세요.");
+        return;
+    }
+
+    const selectedInvest = document.querySelector('input[name="invest"]:checked');
+    if(!selectedInvest){
+        alert("투자 성향 선택하세요.");
+        return;
+    }
+
+    const u = selectedU.value;
+    const investKey = selectedInvest.value;
+
+    const selectedKeys = [];
+    ["dps1","dps2","dps3","hunt1","hunt2","hunt3","dun1","dun2","dun3"].forEach(id => {
+        if(document.getElementById(id).checked){
+            selectedKeys.push(id);
+        }
+    });
+
+    const results = [];
+
+    for(const [name, data] of Object.entries(digimons)){
+    // ======================================================
+    // 선택한 U에서 점수 0이면 후보 제외
+    // ======================================================
+        const filterUScore = getFilterUScore(data.uScore, u);
+if(filterUScore <= 0){
+            continue;
+        }
+
+        const currentUScore = getUScore(data.uScore, u);
+
+        let total = 0;
+
+        total += currentUScore;
+        total += data.scores[investKey] || 0;
+
+        for(const key of selectedKeys){
+            total += data.scores[key] || 0;
+        }
+
+        const reasons = buildReasons(name, data, u, investKey, selectedKeys);
+
+        results.push({
+            name,
+            score: total,
+            base1UScore: data.uScore.u1,
+            valueTag: data.valueTag || "",
+            reasons: reasons,
+            reasonKey: reasons.join(" · ")
+        });
+    }
+
+    results.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.base1UScore !== a.base1UScore) return b.base1UScore - a.base1UScore;
+        if (a.reasonKey !== b.reasonKey) return a.reasonKey.localeCompare(b.reasonKey, "ko");
+        if (a.valueTag !== b.valueTag) return a.valueTag.localeCompare(b.valueTag, "ko");
+        return a.name.localeCompare(b.name, "ko");
+    });
+
+    const groupedMap = new Map();
+
+    for (const item of results) {
+        const groupKey = `${item.score}__${item.reasonKey}__${item.valueTag}`;
+
+        if (!groupedMap.has(groupKey)) {
+            groupedMap.set(groupKey, {
+                score: item.score,
+                names: [item.name],
+                reasons: item.reasons,
+                reasonKey: item.reasonKey,
+                valueTag: item.valueTag,
+                base1UScore: item.base1UScore
+            });
+        } else {
+            groupedMap.get(groupKey).names.push(item.name);
+        }
+    }
+
+    const groupedResults = Array.from(groupedMap.values());
+
+    groupedResults.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.base1UScore !== a.base1UScore) return b.base1UScore - a.base1UScore;
+        if (a.valueTag !== b.valueTag) return a.valueTag.localeCompare(b.valueTag, "ko");
+        return a.names[0].localeCompare(b.names[0], "ko");
+    });
+
+    let output = `추천 TOP 5\n\n`;
+
+    let currentRank = 0;
+    let prevScore = null;
+
+    for (let i = 0; i < groupedResults.length; i++) {
+        const item = groupedResults[i];
+
+        if (prevScore === null || item.score !== prevScore) {
+            currentRank++;
+        }
+
+        if (currentRank > 5) break;
+
+        const isSame = i > 0 && groupedResults[i - 1].score === item.score;
+        const rankText = isSame ? `${currentRank}위(공동)` : `${currentRank}위`;
+
+        output += `${rankText} : ${item.names.join(", ")} (${item.score}점)\n`;
+        output += `└ ${item.valueTag} · ${item.reasons.join(" · ")}\n\n`;
+
+        prevScore = item.score;
+    }
+
+    document.getElementById("result").innerText = output;
+}
+</script>
+
 </body>
 </html>
