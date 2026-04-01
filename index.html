@@ -82,7 +82,7 @@ label {
     <h3>5. 던전 <small>(최대 2개)</small></h3>
     <label><input type="checkbox" id="dun1"> 주요 던전</label>
     <label><input type="checkbox" id="dun2"> 상위 컨텐츠</label>
-    <label><input type="checkbox" id="dun3"> 솔로던 클리어 필수</label>
+    <label><input type="checkbox" id="dun3"> 솔로던 필수</label>
 </div>
 
 <button onclick="calc()">결과 보기</button>
@@ -735,34 +735,43 @@ function calc(){
         return a.name.localeCompare(b.name, "ko");
     });
 
-    const groupedMap = new Map();
+    const totalGroups = results.length;
 
-    for (const item of results) {
-        const groupKey = `${item.score}__${item.reasonKey}__${item.valueTag}`;
+let output = `추천 TOP 5\n\n`;
 
-        if (!groupedMap.has(groupKey)) {
-            groupedMap.set(groupKey, {
-                score: item.score,
-                names: [item.name],
-                reasons: item.reasons,
-                reasonKey: item.reasonKey,
-                valueTag: item.valueTag,
-                base1UScore: item.base1UScore
-            });
-        } else {
-            groupedMap.get(groupKey).names.push(item.name);
-        }
+let currentRank = 0;
+let prevScore = null;
+
+for (let i = 0; i < results.length; i++) {
+    const item = results[i];
+
+    const tier = getTierLabelByGroupIndex(i, totalGroups);
+    const commentData = archetypeComment[item.name];
+    const comment = commentData ? commentData[tier] : "";
+
+    if (prevScore === null || item.score !== prevScore) {
+        currentRank++;
     }
 
-    const groupedResults = Array.from(groupedMap.values());
-    const totalGroups = groupedResults.length;
+    if (currentRank > 5) break;
 
-    groupedResults.sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        if (b.base1UScore !== a.base1UScore) return b.base1UScore - a.base1UScore;
-        if (a.valueTag !== b.valueTag) return a.valueTag.localeCompare(b.valueTag, "ko");
-        return a.names[0].localeCompare(b.names[0], "ko");
-    });
+    const isSame = i > 0 && results[i - 1].score === item.score;
+    const rankText = isSame ? `${currentRank}위(공동)` : `${currentRank}위`;
+
+    output += `${rankText} : ${item.name} (${item.score}점)\n`;
+    output += `└ ${item.valueTag} · ${item.reasons.join(" · ")}\n`;
+
+    if (comment) {
+        output += `└ ${comment}\n`;
+    }
+
+    output += `\n`;
+
+    prevScore = item.score;
+}
+
+document.getElementById("result").innerText = output;
+document.getElementById("result").scrollIntoView({ behavior: "smooth" });
 
     let output = `추천 TOP 5\n\n`;
 
