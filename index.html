@@ -502,7 +502,7 @@ function getUReasonLabel(name, data, selectedU){
             "블룸", "황팔", "듀크림", "루사극"
         ];
 
-        if (oneUMainList.includes(name)) return "자덱 보유";
+        if (oneUMainList.includes(name)) return "1U 자덱 보유";
         if (data.uScore.u1 >= 3) return "1U 무난";
         return "1U 약세";
     }
@@ -725,7 +725,7 @@ function calc(){
         }
         
         if (u === "1") {
-            const oneUMainList = ["블룸", "황팔", "듀크림", "루사극", "무녀", 슈페", "던데블", "스극"];
+            const oneUMainList = ["블룸", "황팔", "듀크림", "루사극", "무녀", "슈페", "던데블", "스극"];
             if (oneUMainList.includes(name)) {
                 total += 1;
             }
