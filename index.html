@@ -49,7 +49,7 @@ label {
 <h1>디지몬 추천기</h1>
 
 <div class="box">
-    <h3>1. 몇 U덱 까지 알아보셨나요?</h3>
+    <h3>1. 몇 U덱 까지 보고오셨나요?</h3>
     <label><input type="radio" name="u" value="1"> 1U</label>
     <label><input type="radio" name="u" value="2~3"> 2~3U</label>
     <label><input type="radio" name="u" value="5"> 5U</label>
@@ -492,24 +492,25 @@ const traitLabels = {
     }
 };
 
-// ======================================================
+// // ======================================================
 // 3-2) U 이유 문구
 // ======================================================
 function getUReasonLabel(name, data, selectedU){
     if(selectedU === "1"){
-        const score = data.uScore.u1;
+        const oneUMainList = ["오엑극", "아바도", "아바코", "머시풀", "블룸", "황팔", "듀크림", "루사극"];
 
-        if(score >= 5) return "1U 메인급";
-        if(score >= 4) return "1U 주력 가능";
-        if(score >= 3) return "1U 무난";
+        if (oneUMainList.includes(name)) return "1U 주력";
+        if (data.uScore.u1 >= 3) return "1U 무난";
         return "1U 약세";
     }
 
     if(selectedU === "2~3"){
-        const score = data.uScore.u1 + data.uScore.u2_3;
+        const twoThreeUMainList = ["아바도", "아바코", "오엑극", "리리각", "홀드", "갓드"];
 
-        if(score >= 6) return "2~3U 메인급";
-        if(score >= 4) return "2~3U 서브급";
+        if (twoThreeUMainList.includes(name)) return "2~3U 주력";
+
+        const score = data.uScore.u1 + data.uScore.u2_3;
+        if(score >= 4) return "2~3U 무난";
         if(score >= 2) return "2~3U 파츠";
         return "2~3U 저점";
     }
@@ -517,7 +518,6 @@ function getUReasonLabel(name, data, selectedU){
     if(selectedU === "5"){
         const score = data.uScore.u5;
 
-        if(score >= 5) return "5U 핵심축";
         if(score >= 4) return "5U 실전형";
         if(score >= 3) return "5U 파츠";
         return "5U 저점";
@@ -526,7 +526,6 @@ function getUReasonLabel(name, data, selectedU){
     if(selectedU === "6"){
         const score = data.uScore.u6;
 
-        if(score >= 5) return "6U 핵심축";
         if(score >= 4) return "6U 빌드업형";
         if(score >= 3) return "6U 파츠";
         return "6U 저점";
@@ -587,15 +586,14 @@ function getDpsTrait(data, name){
 // ======================================================
 // 3-5) 사냥 성향
 // ======================================================
-function getHuntTrait(data){
+function getHuntTrait(data, name){
     const s = data.scores;
 
     if (s.hunt1 >= 8) return { label: "광역사냥 강점", score: s.hunt1 };
-    if (s.hunt2 >= 4) return { label: "사냥 무난", score: s.hunt2 };
+    if (s.hunt2 >= 6) return { label: "사냥 무난", score: s.hunt2 };
 
     return { label: "", score: 0 };
 }
-
 // ======================================================
 // 3-6) 던전 성향
 // ======================================================
@@ -618,7 +616,7 @@ function getDungeonTrait(data){
 function buildReasons(name, data, selectedU, investKey, selectedKeys){
     const investTrait = getInvestTrait(data);
     const dpsTrait = getDpsTrait(data, name);
-    const huntTrait = getHuntTrait(data);
+    const huntTrait = getHuntTrait(data, name);
     const dungeonTrait = getDungeonTrait(data);
 
     const reasons = [];
