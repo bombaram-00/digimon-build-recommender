@@ -497,7 +497,10 @@ const traitLabels = {
 // ======================================================
 function getUReasonLabel(name, data, selectedU){
     if(selectedU === "1"){
-        const oneUMainList = ["오엑극", "아바도", "아바코", "머시풀", "블룸", "황팔", "듀크림", "루사극"];
+        const oneUMainList = [
+            "오엑극", "아바도", "아바코",
+            "머시풀", "블룸", "황팔", "듀크림", "루사극"
+        ];
 
         if (oneUMainList.includes(name)) return "1U 주력";
         if (data.uScore.u1 >= 3) return "1U 무난";
@@ -505,7 +508,10 @@ function getUReasonLabel(name, data, selectedU){
     }
 
     if(selectedU === "2~3"){
-        const twoThreeUMainList = ["아바도", "아바코", "오엑극", "리리각", "홀드", "갓드"];
+        const twoThreeUMainList = [
+            "아바도", "아바코", "오엑극",
+            "리리각", "홀드", "갓드"
+        ];
 
         if (twoThreeUMainList.includes(name)) return "2~3U 주력";
 
@@ -517,7 +523,6 @@ function getUReasonLabel(name, data, selectedU){
 
     if(selectedU === "5"){
         const score = data.uScore.u5;
-
         if(score >= 4) return "5U 실전형";
         if(score >= 3) return "5U 파츠";
         return "5U 저점";
@@ -525,7 +530,6 @@ function getUReasonLabel(name, data, selectedU){
 
     if(selectedU === "6"){
         const score = data.uScore.u6;
-
         if(score >= 4) return "6U 빌드업형";
         if(score >= 3) return "6U 파츠";
         return "6U 저점";
@@ -533,7 +537,6 @@ function getUReasonLabel(name, data, selectedU){
 
     return "현재 조건 적합";
 }
-
 // ======================================================
 // 3-3) 투자 성향
 // ======================================================
