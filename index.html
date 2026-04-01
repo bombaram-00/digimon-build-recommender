@@ -499,7 +499,7 @@ function getUReasonLabel(name, data, selectedU){
     if(selectedU === "1"){
         const oneUMainList = [
             "오엑극", "아바도", "아바코",
-            "머시풀", "블룸", "황팔", "듀크림", "루사극"
+            "블룸", "황팔", "듀크림", "루사극"
         ];
 
         if (oneUMainList.includes(name)) return "1U 주력";
@@ -737,52 +737,16 @@ function calc(){
 
     const totalGroups = results.length;
 
-let output = `추천 TOP 5\n\n`;
-
-let currentRank = 0;
-let prevScore = null;
-
-for (let i = 0; i < results.length; i++) {
-    const item = results[i];
-
-    const tier = getTierLabelByGroupIndex(i, totalGroups);
-    const commentData = archetypeComment[item.name];
-    const comment = commentData ? commentData[tier] : "";
-
-    if (prevScore === null || item.score !== prevScore) {
-        currentRank++;
-    }
-
-    if (currentRank > 5) break;
-
-    const isSame = i > 0 && results[i - 1].score === item.score;
-    const rankText = isSame ? `${currentRank}위(공동)` : `${currentRank}위`;
-
-    output += `${rankText} : ${item.name} (${item.score}점)\n`;
-    output += `└ ${item.valueTag} · ${item.reasons.join(" · ")}\n`;
-
-    if (comment) {
-        output += `└ ${comment}\n`;
-    }
-
-    output += `\n`;
-
-    prevScore = item.score;
-}
-
-document.getElementById("result").innerText = output;
-document.getElementById("result").scrollIntoView({ behavior: "smooth" });
-
     let output = `추천 TOP 5\n\n`;
 
     let currentRank = 0;
     let prevScore = null;
 
-    for (let i = 0; i < groupedResults.length; i++) {
-        const item = groupedResults[i];
+    for (let i = 0; i < results.length; i++) {
+        const item = results[i];
 
         const tier = getTierLabelByGroupIndex(i, totalGroups);
-        const commentData = archetypeComment[item.names[0]];
+        const commentData = archetypeComment[item.name];
         const comment = commentData ? commentData[tier] : "";
 
         if (prevScore === null || item.score !== prevScore) {
@@ -791,10 +755,10 @@ document.getElementById("result").scrollIntoView({ behavior: "smooth" });
 
         if (currentRank > 5) break;
 
-        const isSame = i > 0 && groupedResults[i - 1].score === item.score;
+        const isSame = i > 0 && results[i - 1].score === item.score;
         const rankText = isSame ? `${currentRank}위(공동)` : `${currentRank}위`;
 
-        output += `${rankText} : ${item.names.join(", ")} (${item.score}점)\n`;
+        output += `${rankText} : ${item.name} (${item.score}점)\n`;
         output += `└ ${item.valueTag} · ${item.reasons.join(" · ")}\n`;
 
         if (comment) {
