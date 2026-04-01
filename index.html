@@ -180,7 +180,7 @@ const digimons = {
         scores: {
             invest1: 6, invest2: 6, invest3: 8, invest4: 4,
             dps1: 6, dps2: 8, dps3: 4,
-            hunt1: 8, hunt2: 6, hunt3: 4,
+            hunt1: 8, hunt2: 6, hunt3: 2,
             dun1: 4, dun2: 6, dun3: 6
         }
     },
@@ -230,7 +230,7 @@ const digimons = {
         scores: {
             invest1: 6, invest2: 8, invest3: 6, invest4: 4,
             dps1: 8, dps2: 8, dps3: 2,
-            hunt1: 8, hunt2: 6, hunt3: 4,
+            hunt1: 8, hunt2: 6, hunt3: 2,
             dun1: 4, dun2: 8, dun3: 6
         }
     },
@@ -270,7 +270,7 @@ const digimons = {
         scores: {
             invest1: 8, invest2: 6, invest3: 4, invest4: 2,
             dps1: 10, dps2: 6, dps3: 2,
-            hunt1: 8, hunt2: 6, hunt3: 4,
+            hunt1: 8, hunt2: 6, hunt3: 2,
             dun1: 4, dun2: 10, dun3: 8
         }
     },
@@ -723,7 +723,13 @@ function calc(){
         for(const key of selectedKeys){
             total += data.scores[key] || 0;
         }
-
+        
+        if (u === "1") {
+            const oneUMainList = ["블룸", "황팔", "듀크림", "루사극", "무녀", 슈페", "던데블", "스극"];
+            if (oneUMainList.includes(name)) {
+                total += 1;
+            }
+        }
         const reasons = buildReasons(name, data, u, investKey, selectedKeys);
 
         results.push({
